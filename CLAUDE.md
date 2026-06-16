@@ -44,6 +44,13 @@ npm run build:mac      # macOS only  (needs codesign → Mac only)
 npm run build:win      # Windows only (works from a Mac too)
 ```
 
+CI: [.github/workflows/build.yml](.github/workflows/build.yml) runs `npm run
+build` on a `macos-latest` runner on every push to `main` and publishes the two
+executables to a GitHub Release tagged `v<version>` (from
+[package.json](package.json)). Bump `version` to cut a new release; pushing
+without a bump overwrites the existing release's assets. The macOS asset is
+**Apple Silicon** (the runner is arm64).
+
 Requires **Node 24+** and an installed Chromium browser (Google Chrome, or Edge
 on Windows). Output ZIP lands as `sentenze_<timestamp>.zip` in `--out`
 (default: cwd).
