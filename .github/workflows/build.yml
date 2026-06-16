@@ -1,0 +1,61 @@
+name: Build & Release binaries
+
+# Builds the standalone macOS + Windows executables on every push to main and
+# publishes them to a GitHub Release tagged with the version in package.json.
+#
+# Runs on macOS because the macOS binary requires `codesign` (ad-hoc signing is
+# mandatory on Apple Silicon); `build.mjs --all` produces the Windows binary
+# from the same Mac job (it just downloads the matching node.exe).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Needed for softprops/action-gh-release to create/update the release.
+permissions:
+  contents: write
+
+# A new push to main supersedes an in-flight build.
+concurrency:
+  group: build-release
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build macOS + Windows executables
+        run: npm run build
+
+      - name: Read version from package.json
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          # Re-running for an existing version overwrites that release's assets.
+          files: |
+            dist/sentenze-downloader-macos
+            dist/sentenze-downloader-win.exe
+          body: |
+            Standalone executables — no Node required, only an installed
+            Chromium browser (Google Chrome, or Edge on Windows).
+
+            - **macOS** (Apple Silicon): `sentenze-downloader-macos`
+            - **Windows** (x64): `sentenze-downloader-win.exe`
+
+            The binaries are unsigned; see the README for the first-launch
+            Gatekeeper / SmartScreen steps.
