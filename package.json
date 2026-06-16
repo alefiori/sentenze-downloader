@@ -1,0 +1,21 @@
+{
+  "name": "sentenze-downloader",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "bin": {
+    "sentenze-downloader": "download.mjs"
+  },
+  "scripts": {
+    "download": "node download.mjs",
+    "build": "node build.mjs --all",
+    "build:mac": "node build.mjs --mac",
+    "build:win": "node build.mjs --win"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}
